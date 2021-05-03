@@ -1,0 +1,1372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="hosportal.mapper.HosportalMapper">
+
+	<select id="newHospitalList" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT  
+				@ROWNUM := @ROWNUM + 1 AS rownum, hospital_id, hospital_name, hospital_address2, hospital_skill,hospital_register_date
+			FROM    
+				hospital_member, (SELECT @ROWNUM := 0) tmp
+			order by 
+				hospital_register_date 
+			desc 
+				limit 5
+		]]>
+	</select>
+	<select id="bestHospitalList" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT  
+				@ROWNUM := @ROWNUM + 1 AS rownum, hospital_id, hospital_name, hospital_address2, hospital_skill,hospital_register_date
+			FROM    
+				hospital_member, (SELECT @ROWNUM := 0) tmp
+			ORDER BY 
+				hospital_view_count 
+			DESC limit 5
+		]]>
+	</select>
+	<select id="mainEventList" resultType="hosportal.dto.HosportalEventDto">
+		<![CDATA[
+			select 
+				event_title, event_created_date, event_no
+			from
+				event
+			where
+				event_deleted_yn = 'N'
+			order by event_no desc
+			limit 5;
+		]]>
+	</select>
+	
+	<select id="mainCommunityList" resultType="hosportal.dto.HosportalCommunityDto">
+		<![CDATA[
+			select 
+				community_title, community_created_date, community_no
+			from
+				community
+			where
+				community_deleted_yn = 'N'
+			order by community_no desc
+			limit 5;
+		]]>
+	</select>
+	<!-- 개인회원 회원가입  -->
+	<insert id="insertNormalMember" parameterType="hosportal.dto.HosportalNormalMemberDto">
+		<![CDATA[
+			INSERT INTO normal_member
+				(normal_email, normal_password, normal_tel, normal_address1, normal_address2, normal_address3, normal_gender, normal_name, normal_nickname, normal_birth, normal_register_date)
+			VALUES
+				(#{normalEmail}, #{normalPassword}, #{normalTel}, #{normalAddress1}, #{normalAddress2}, #{normalAddress3}, #{normalGender}, #{normalName}, #{normalNickname}, #{normalBirth}, NOW());
+		]]>
+	</insert>
+	
+	<!-- 개인회원 회원가입 파일업로드 -->
+	<insert id="insertNormalFile" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[
+			insert into file
+				(file_name, file_created_date, normal_email)
+			values
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.normalEmail}
+			)
+		</foreach>
+	</insert>
+	
+	<!-- 개인회원 회원가입 아이디 중복체크 -->
+	<select id="normalEmailCheck" parameterType="String" resultType="int">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS cnt
+			FROM
+				normal_member
+			WHERE
+				normal_email = #{normalEmail}
+			
+		]]>
+	</select>
+	
+
+	<!-- 병원회원 회원가입 -->
+	<insert id="insertHospitalMember" parameterType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			INSERT INTO hospital_member
+				(hospital_id, hospital_password, hospital_name, hospital_tel, hospital_address1, hospital_address2, hospital_address3, hospital_open_time, hospital_close_time, hospital_skill, hospital_Introduce, hospital_category1, hospital_category2, hospital_category3, hospital_closed,hospital_register_date)
+			VALUES
+				(#{hospitalId}, #{hospitalPassword}, #{hospitalName}, #{hospitalTel}, #{hospitalAddress1}, #{hospitalAddress2}, #{hospitalAddress3}, #{hospitalOpenTime}, #{hospitalCloseTime}, #{hospitalSkill}, #{hospitalIntroduce}, #{hospitalCategory1}, #{hospitalCategory2}, #{hospitalCategory3}, #{hospitalClosed},NOW())
+		]]>
+	</insert>
+	
+	<!-- 병원 회원가입 아이디 중복 체크 -->
+	<select id="hospitalIdCheck" parameterType="String" resultType="int">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS cnt
+			FROM
+				hospital_member
+			WHERE
+				hospital_id = #{hospitalId}
+			
+		]]>
+	</select>
+	
+	<!-- 병원회원 회원가입 파일 업로드 -->
+	<insert id="insertHospitalFile" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[
+			insert into file
+				(file_name, file_created_date, hospital_id)
+			values
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.hospitalId}
+			)
+		</foreach>
+	</insert>
+	
+	<!-- 병원 목록 불러오기 -->
+	<select id="selectHosfitalList" parameterType="HosportalHospitalMemberDto" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT      
+				hospital_member.hospital_id,
+                hospital_member.hospital_name,
+                hospital_member.hospital_tel,
+                hospital_member.hospital_address1,
+                hospital_member.hospital_address2,
+                hospital_member.hospital_address3,
+                hospital_member.hospital_open_time,
+                hospital_member.hospital_close_time,
+                hospital_member.hospital_skill,
+                hospital_member.hospital_Introduce,
+                hospital_member.hospital_category1,
+                hospital_member.hospital_category2,
+				hospital_member.hospital_category3,
+                hospital_member.hospital_closed,
+                file.file_name
+			FROM        
+				hospital_member
+			LEFT JOIN  
+				file
+			ON           
+				hospital_member.hospital_id = file.hospital_id
+			order by 
+				hospital_member.hospital_register_date desc
+			limit
+				#{paginationInfo.firstRecordIndex}, #{recordsPerPage}
+		]]>
+	</select>
+	
+	<select id="selectHospitalTotalCount" parameterType="HosportalHospitalMemberDto" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			hospital_member
+	</select>
+	
+	<!-- 병원 종목별 목록 불러오기 -->
+	<select id="Dermatology" parameterType="String" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT       
+				hospital_member.hospital_id,
+                hospital_member.hospital_name,
+                hospital_member.hospital_tel,
+                hospital_member.hospital_address1,
+                hospital_member.hospital_address2,
+                hospital_member.hospital_address3,
+                hospital_member.hospital_open_time,
+                hospital_member.hospital_close_time,
+                hospital_member.hospital_skill,
+                hospital_member.hospital_Introduce,
+                hospital_member.hospital_category1,
+                hospital_member.hospital_category2,
+				hospital_member.hospital_category3,
+                hospital_member.hospital_closed,
+                file.file_name
+			FROM        
+				hospital_member
+			LEFT JOIN  
+				file
+			ON           
+				hospital_member.hospital_id = file.hospital_id
+			where
+				hospital_member.hospital_skill like concat('%', #{search_param}, '%')
+			ORDER BY 
+				hospital_member.hospital_name asc
+		]]>
+	</select>
+
+	<!-- 병원 지역별 목록 불러오기 -->
+	<select id="Seoul" parameterType="String" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT       
+				hospital_member.hospital_id,
+                hospital_member.hospital_name,
+                hospital_member.hospital_tel,
+                hospital_member.hospital_address1,
+                hospital_member.hospital_address2,
+                hospital_member.hospital_address3,
+                hospital_member.hospital_open_time,
+                hospital_member.hospital_close_time,
+                hospital_member.hospital_skill,
+                hospital_member.hospital_Introduce,
+                hospital_member.hospital_category1,
+                hospital_member.hospital_category2,
+				hospital_member.hospital_category3,
+                hospital_member.hospital_closed,
+                file.file_name
+			FROM        
+				hospital_member
+			LEFT JOIN  
+				file
+			ON           
+				hospital_member.hospital_id = file.hospital_id
+			where
+				hospital_member.hospital_address2 like concat('%', #{search_param}, '%')
+			ORDER BY 
+				hospital_member.hospital_name asc
+			
+		]]>
+	</select>
+	
+	<!-- 개인회원 로그인 체크 -->
+	<select id="normalLoginCheck" parameterType="map" resultType="int">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS cnt
+			FROM
+				normal_member
+			WHERE
+				normal_email = #{id}
+			AND
+				normal_password = #{pw}
+		]]>
+	</select>
+	
+	<!-- 병원회원 로그인 체크 -->
+	<select id="hospitalLoginCheck" parameterType="map" resultType="int">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS cnt
+			FROM
+				hospital_member
+			WHERE
+				hospital_id = #{id}
+			AND
+				hospital_password = #{pw}
+		]]>
+	</select>
+	
+	<!-- 병원 상세페이지 -->
+	<select id="hosportalDetail" parameterType="String" resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			SELECT       
+				hospital_member.hospital_id,
+                hospital_member.hospital_name,
+                hospital_member.hospital_tel,
+                hospital_member.hospital_address1,
+                hospital_member.hospital_address2,
+                hospital_member.hospital_address3,
+                hospital_member.hospital_open_time,
+                hospital_member.hospital_close_time,
+                hospital_member.hospital_skill,
+                hospital_member.hospital_Introduce,
+                hospital_member.hospital_category1,
+                hospital_member.hospital_category2,
+				hospital_member.hospital_category3,
+                hospital_member.hospital_closed,
+                file.file_name
+			FROM        
+				hospital_member
+			LEFT JOIN  
+				file
+			ON           
+				hospital_member.hospital_id = file.hospital_id
+			WHERE 
+				hospital_member.hospital_id = #{hospitalId};
+		]]>
+	</select>
+	
+	<!-- 병원 조회수  -->
+	<update id="hospitalViewCount" parameterType="String">
+		<![CDATA[
+			UPDATE
+				hospital_member
+			SET
+				hospital_view_count = hospital_view_count + 1
+			WHERE
+				hospital_id = #{hospitalId}
+		]]>
+	</update>
+	
+	
+	<resultMap type="hosportal.dto.HosportalCommunityDto" id="community">
+		<id property="communityNo" column="community_no"/>
+		<id property="communityTitle" column="community_title"/>
+		<id property="communityContents" column="community_contents"/>
+		<id property="communityCreatedDate" column="community_created_date"/>
+		<id property="communityDeletedYn" column="community_deleted_yn"/>
+		<id property="normalEmail" column="normal_email"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.FileDto" id="file">
+		<id property="fileNo" column="file_no"/>
+		<id property="fileName" column="file_name"/>
+		<id property="normalEmail" column="normal_email"/>
+		<id property="reviewNo" column="review_no"/>
+		<id property="eventNo" column="event_no"/>
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="communityNo" column="community_no"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalNormalMemberDto" id="normal_member">
+		<id property="normalEmail" column="normal_email"/>
+		<id property="normalPassword" column="normal_password"/>
+		<id property="normalTel" column="normal_tel"/>
+		<id property="normalTel1" column="normal_tel1"/>
+		<id property="normalTel2" column="normal_tel2"/>
+		<id property="normalTel3" column="normal_tel2"/>
+		<id property="normalAddress1" column="normal_address1"/>
+		<id property="normalAddress2" column="normal_address2"/>
+		<id property="normalAddress3" column="normal_address3"/>
+		<id property="normalGender" column="normal_gender"/>
+		<id property="normalName" column="normal_name"/>
+		<id property="normalNickname" column="normal_nickname"/>
+		<id property="normalBirth" column="normal_birth"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalReserveDto" id="reserve">
+		<id property="reserveNo" column="reserve_no"/>
+		<id property="reserveTel" column="reserve_tel"/>
+		<id property="reserveTime" column="reserve_time"/>
+		<id property="reserveExplain" column="reserve_explain"/>
+		<id property="reserveDate" column="reserve_date"/>
+		<id property="reserveFinished" column="reserve_finished"/>
+		<id property="normalEmail" column="normal_email"/>
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="hospitalName" column="hospital_name"/>
+		<id property="hospitalAddress2" column="hospital_address2"/>
+		<id property="hospitalAddress3" column="hospital_address3"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalHospitalMemberDto" id="hospital_member">
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="hospitalPassword" column="hospital_password"/>
+		<id property="hospitalName" column="hospital_name"/>
+		<id property="hospitalAddress1" column="hospital_address1"/>
+		<id property="hospitalAddress2" column="hospital_address2"/>
+		<id property="hospitalAddress3" column="hospital_address3"/>
+		<id property="hospitalTel" column="hospital_tel"/>
+		<id property="hospitalOpenTime" column="hospital_open_time"/>
+		<id property="hospitalCloseTime" column="hospital_close_time"/>
+		<id property="hospitalSkill" column="hospital_skill"/>
+		<id property="hospitalIntroduce" column="hospital_introduce"/>
+		<id property="hospitalCategory1" column="hospital_category1"/>
+		<id property="hospitalCategory2" column="hospital_category2"/>
+		<id property="hospitalCategory3" column="hospital_category3"/>
+		<id property="hospitalClosed" column="hospital_closed"/>
+		<id property="hospitalRegisterDate" column="hospital_register_date"/>
+		<id property="hospitalViewCount" column="hospital_view_count"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalQuestionDto" id="question">
+		<id property="questionNo" column="question_no"/>
+		<id property="questionContents" column="question_contents"/>
+		<id property="questionCreatedDate" column="question_created_date"/>
+		<id property="questionFinished" column="question_finished"/>
+		<id property="questionTitle" column="question_title"/>
+		<id property="normalEmail" column="normal_email"/>
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="hospitalName" column="hospital_name"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalReviewDto" id="review">
+		<id property="reviewComment" column="review_comment"/>
+		<id property="reviewDeletedYn" column="review_deleted_yn"/>
+		<id property="reviewCreatedDate" column="review_created_date"/>
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="normalEmail" column="normal_email"/>
+	</resultMap>
+	<resultMap type="hosportal.dto.HosportalEventDto" id="event">
+		<id property="eventNo" column="event_no"/>
+		<id property="eventTitle" column="event_title"/>
+		<id property="eventComment" column="event_comment"/>
+		<id property="eventCreatedDate" column="event_created_date"/>
+		<id property="eventDeletedYn" column="event_deleted_yn"/>
+		<id property="hospitalId" column="hospital_id"/>
+		<id property="fileName" column="file_name"/>
+	</resultMap>
+	
+	<!-- 이벤트 목록 불러오기 -->
+	<select id="selectEvents" resultType="hosportal.dto.HosportalEventDto">
+		<![CDATA[		
+			SELECT
+				e.event_no as event_no, e.event_title as event_title, e.event_hit_cnt as event_hit_cnt,
+				e.event_comment as event_comment, h.hospital_name as hospital_name,e.hos_id as hos_id,
+				DATE_FORMAT(e.event_created_date, '%Y.%m.%d %H:%i:%s') as event_created_date
+			FROM
+				event as e, hospital_member as h
+			WHERE e.hos_id = h.hospital_id
+			AND e.event_deleted_yn = 'N'
+			order by
+				e.event_created_date desc
+			LIMIT
+            	#{pageStart}, #{perPageNum}
+            
+		]]>
+	</select>
+	
+	<!-- 이벤트 사진 변경 -->
+	<insert id="updateEventFileUpdate" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[ 
+			INSERT INTO file
+				(file_name, file_created_date, event_no)
+			VALUES
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.eventNo}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 이벤트 사진 삭제 -->
+	<insert id="updateEventFileDelete" parameterType="int">
+		<![CDATA[ 
+			delete from file 
+				where 
+					event_no=#{eventNo}
+		]]>
+	</insert>
+	
+	<!-- 이벤트 상세 페이지 -->
+	<select id="selectEventDetail" parameterType="int" resultType="hosportal.dto.HosportalEventDto">
+		<![CDATA[	
+			SELECT       
+				event.event_no, 
+			    event.event_title, 
+			    event.event_comment, 
+			    event.event_created_date,  
+			    event.event_deleted_yn, 
+			    event.hos_id,
+				hospital_member.hospital_name,
+                hospital_member.hospital_address2,
+                file.file_name
+			FROM        
+				event
+			left JOIN  
+				hospital_member
+			ON           
+				event.hos_id = hospital_member.hospital_id
+			left join 
+				file
+			on
+				event.event_no = file.event_no
+			where
+				event.event_no = #{eventNo}
+			order by
+				event.event_created_date desc
+		]]>
+	</select>
+	<!-- 이벤트 내용 입력 -->
+	<insert id="insertEvent" parameterType="hosportal.dto.HosportalEventDto" keyProperty="eventNo" useGeneratedKeys="true">
+		<![CDATA[
+			INSERT INTO event
+				(event_title, event_comment, event_created_date, hos_id)
+			VALUES
+				(#{eventTitle}, #{eventComment}, NOW(), #{hosId})
+		]]>
+	</insert>
+	
+	<!-- 이벤트 내용 수정 -->
+	<update id="updateEvent" parameterType="hosportal.dto.HosportalEventDto">
+		<![CDATA[
+			UPDATE 
+				event 
+			SET 
+				event_title = #{eventTitle},
+				event_comment =#{eventComment} 
+			WHERE event_no = ${eventNo}
+		]]>
+	</update>
+	
+	<!-- 이벤트 삭제 -->
+	<update id="deleteEvent" parameterType="int">
+		<![CDATA[
+			UPDATE 
+				event
+			SET
+			 	event_deleted_yn = 'Y'
+			WHERE 
+				event_no = #{eventNo}
+		]]>
+	</update>
+	
+	<!-- 이벤트 페이징 -->
+	<select resultType="int" id="EventListCountCriteria">
+		<![CDATA[
+			SELECT
+	   			count(*) as listCnt
+			FROM
+	   			event
+	   		WHERE
+	   			event_deleted_yn = 'N'
+   		]]>
+	</select>
+	
+	<!-- 이벤트 조회수 -->
+	<update id="updateEventHitCount" parameterType="int">
+		<![CDATA[
+			UPDATE 
+				event 
+			SET 
+				event_hit_cnt = event_hit_cnt + 1 
+			WHERE event_no = #{eventNo}
+		]]>
+	</update>
+ 	
+	<select resultType="hosportal.dto.FileDto" id="selectEventFileList" parameterType="int">
+		<![CDATA[
+			SELECT 
+				file_name
+			FROM 
+				file
+			WHERE 
+				event_no = #{eventNo}
+			AND
+				file_deleted_yn = 'N'
+		]]>
+	</select>
+
+	<!-- 이벤트 파일 업로드 -->
+	<insert id="insertEventFileList" parameterType="hosportal.dto.FileDto">
+		<![CDATA[
+			INSERT INTO file
+				(file_no, event_no, file_name, file_created_date)
+			VALUES
+		]]>
+		
+		<foreach separator="," item="item" collection="list">
+			(#{item.fileNo}, #{item.eventNo}, #{item.fileName}, NOW()) 
+		</foreach>
+	</insert>
+	
+	<!-- 커뮤니티 상세 페이지 -->
+	<select id="communityDetail" parameterType="int" resultType="hosportal.dto.HosportalCommunityDto">
+		<![CDATA[
+			SELECT       
+				community.community_no, 
+			    community.community_title, 
+			    community.community_contents, 
+			    community.community_created_date,  
+			    community.community_deleted_yn, 
+			    community.community_hit_cnt,
+			    community.normal_email,
+			    file.file_name
+			FROM        
+				community
+			LEFT JOIN  
+				file
+			ON           
+				community.community_no = file.community_no 
+			WHERE 
+				community.community_no = #{communityNo};
+		]]>
+	</select>
+	
+	<!-- 커뮤니티 목록 불러오기 -->
+	<select id="selectCommunityList" resultType="hosportal.dto.HosportalCommunityDto">
+		<![CDATA[
+			select 
+				community_no, community_title, community_contents, community_created_date, community_deleted_yn, normal_email, community_hit_cnt
+			from
+				community
+			where 
+				community_deleted_yn = 'N'
+            order by 
+            	community_no desc
+            limit 
+            	#{pageStart}, #{perPageNum}
+            	
+		]]>
+	</select>
+	
+	<!-- 커뮤니티 입력 -->
+	<insert id="insertCommunity" parameterType="hosportal.dto.HosportalCommunityDto" keyProperty="communityNo" useGeneratedKeys="true">
+		<![CDATA[
+			INSERT INTO community 
+				(community_title, community_contents, community_created_date, normal_email)
+			VALUES
+				(#{communityTitle}, #{communityContents}, NOW(), #{normalEmail})
+		]]>
+	</insert>
+	
+	<!-- 커뮤니티 수정 -->
+	<update id="updateCommunity" parameterType="hosportal.dto.HosportalCommunityDto">
+		<![CDATA[
+			UPDATE 
+				community 
+			SET 
+				community_title = #{communityTitle},
+				community_contents= #{communityContents} 
+			WHERE 
+				community_no = ${communityNo}		
+		]]>
+	</update>
+	
+	<!-- 커뮤니티 사진 변경 -->
+	<insert id="communityFileUpdate" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[ 
+			INSERT INTO file
+				(file_name, file_created_date, community_no)
+			VALUES
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.communityNo}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 커뮤니티 사진 삭제 -->
+	<insert id="communityFileDelete" parameterType="int">
+		<![CDATA[ 
+			delete from file 
+				where 
+					community_no=#{communityNo}
+		]]>
+	</insert>
+	
+	
+	<!-- 커뮤니티 삭제 -->
+	<update id="deleteCommunity" parameterType="int">
+		<![CDATA[
+			UPDATE 
+				community 
+			SET 
+				community_deleted_yn = 'Y' 
+			WHERE community_no = #{communityNo}
+		]]>
+	</update>
+	
+	<!-- 커뮤니티 페이징 -->
+	<select resultType="int" id="CommunityListCountCriteria">
+		<![CDATA[
+			SELECT
+	   			count(*) as listCnt
+			FROM
+	   			community
+	   		WHERE
+	   			community_deleted_yn = 'N'
+	   		
+   		]]>
+	</select>
+	
+	<!-- 커뮤니티 조회수 -->
+	<update id="updateCommunityHitCount" parameterType="int">
+		<![CDATA[
+			UPDATE 
+				community 
+			SET 
+				community_hit_cnt = community_hit_cnt + 1 
+			WHERE community_no = #{communityNo}
+			
+		]]>
+	</update>
+	
+	<!-- 커뮤니티 댓글 -->
+	<select resultType="hosportal.dto.ReCommunityDto" id="selectReCommunityList" parameterType="int">
+		<![CDATA[	
+				SELECT 
+					re_contents, re_created_date, n_member_id, re_community_no
+				FROM 
+					re_community
+				WHERE 
+					commu_no = #{commuNo}
+				ORDER BY re_created_date DESC
+		]]>
+	</select>
+
+	<!-- 커뮤니티 댓글 입력 -->
+	<insert id="insertReCommunity" parameterType="hosportal.dto.ReCommunityDto">
+		<![CDATA[
+			INSERT INTO re_community
+				(commu_no, re_contents, re_created_date, n_member_id)
+			VALUES
+				(#{commuNo}, #{reContents}, NOW(), #{nMemberId})	
+		]]>
+	</insert>
+
+	<!-- 커뮤니티 댓글 수정 -->
+	<update id="updateReCommunity" parameterType="hosportal.dto.ReCommunityDto">
+		<![CDATA[
+			UPDATE 
+				re_community 
+			SET
+				re_contents = #{reContents}
+			WHERE re_community_no = ${reCommunityNo}
+		]]>
+	</update>
+
+	<!-- 커뮤니티 댓글 삭제 -->
+	<delete id="deleteReCommunity" parameterType="int">
+		<![CDATA[
+			DELETE FROM 
+				re_community 
+			WHERE  re_community_no = ${reCommunityNo}
+		]]>
+	</delete>
+
+	
+	<!-- 이벤트 목록 -->
+	<select id="selectEventList" parameterType="HosportalEventDto" resultType="hosportal.dto.HosportalEventDto">
+		<![CDATA[
+			SELECT       
+				event.event_no, 
+			    event.event_title, 
+			    event.event_comment, 
+			    event.event_created_date,  
+			    event.event_deleted_yn, 
+			    event.hospital_id,
+				hospital_member.hospital_name,
+                hospital_member.hospital_address2
+			FROM        
+				event
+			JOIN  
+				hospital_member
+			ON           
+				event.hospital_id = hospital_member.hospital_id
+			order by
+				event.event_created_date desc
+			limit
+				#{paginationInfo.firstRecordIndex}, #{recordsPerPage}
+		]]>
+	</select>
+	<select id="selectEventTotalCount" parameterType="HosportalEventDto" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			event
+	</select>
+	
+	<!-- 개인회원 마이메이지 - 회원 정보 상세 페이지 -->
+	<select id="normalMemberDetail" parameterType="String"  resultType="hosportal.dto.HosportalNormalMemberDto">
+		<![CDATA[
+			 SELECT       
+				normal_member.normal_email, 
+			    normal_member.normal_password, 
+			    normal_member.normal_tel, 
+			    normal_member.normal_address1,  
+			    normal_member.normal_address2, 
+			    normal_member.normal_address3,
+                normal_member.normal_gender,
+                normal_member.normal_name,
+                normal_member.normal_nickname,
+                normal_member.normal_birth,
+			    file.file_name
+			FROM        
+				normal_member
+			LEFT JOIN  
+				file
+			ON           
+				normal_member.normal_email = file.normal_email 
+			WHERE 
+				normal_member.normal_email = #{normalEmail};
+		]]>
+	</select>
+	
+	<!-- 개인회원 마이메이지 - 회원 정보 수정하기 -->
+	<update id="normalMemberUpdate" parameterType="hosportal.dto.HosportalNormalMemberDto">
+		<![CDATA[
+			update 
+				normal_member
+			set
+				normal_password = #{normalPassword},
+			    normal_tel = #{normalTel},
+			    normal_address1 = #{normalAddress1},
+			    normal_address2 = #{normalAddress2},
+			    normal_address3 = #{normalAddress3},
+			    normal_gender = #{normalGender},
+			    normal_name = #{normalName},
+			    normal_nickname = #{normalNickname},
+			    normal_birth = #{normalBirth}
+			where
+				normal_email = #{normalEmail}
+		]]>
+	</update>
+	<!-- 일반회원-프로필 사진 변경 -->
+	<insert id="normalFileUpdate" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[ 
+			INSERT INTO file
+				(file_name, file_created_date, normal_email)
+			VALUES
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.normalEmail}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 일반회원-프로필 사진 삭제 -->
+	<insert id="normalFileDelete" parameterType="String">
+		<![CDATA[ 
+			delete from file 
+				where 
+					normal_email=#{normalEmail}
+		]]>
+	</insert>
+	
+	<!-- 병원회원-프로필 사진 변경 -->
+	<insert id="hospitalFileUpdate" parameterType="hosportal.dto.FileDto" useGeneratedKeys="true" keyProperty="fileNo">
+		<![CDATA[ 
+			INSERT INTO file
+				(file_name, file_created_date, hospital_id)
+			VALUES
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.fileName},
+				NOW(),
+				#{item.hospitalId}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 병원회원-프로필 사진 삭제 -->
+	<insert id="hospitalFileDelete" parameterType="String">
+		<![CDATA[ 
+			delete from file 
+				where 
+					hospital_id=#{hospitalId}
+		]]>
+	</insert>
+	<update id="updateHospitalFile" parameterType="hosportal.dto.FileDto">
+		<![CDATA[
+			update 
+				file
+			set
+				file_name = #{fileName}
+			where
+				normal_email = #{normalEmail};
+		]]>
+	</update>
+	
+	<!-- 병원 예약하기 -->
+	<insert id="hospitalReserve" parameterType="hosportal.dto.HosportalReserveDto">
+		<![CDATA[
+			INSERT INTO reserve
+				( 
+                reserve_tel, 
+                reserve_time, 
+                reserve_explain,
+                reserve_date, 
+                normal_email, 
+                hospital_id)
+			VALUES
+				(#{reserveTel}, #{reserveTime}, #{reserveExplain}, #{reserveDate}, #{normalEmail}, #{hospitalId})
+		]]>
+	</insert>
+	
+	<!-- 개인회원 마이메이지 - 예약 목록 불러오기 -->
+	<select id="normalMypageReserve" parameterType="map"  resultType="hosportal.dto.HosportalReserveDto">
+		<![CDATA[
+			 SELECT       
+				reserve.reserve_no, 
+			    reserve.reserve_tel, 
+			    reserve.reserve_time, 
+			    reserve.reserve_explain,  
+			    reserve.reserve_date, 
+			    reserve.reserve_finished,
+                reserve.normal_email,
+                hospital_member.hospital_id,
+				hospital_member.hospital_name,
+                hospital_member.hospital_address2,
+                hospital_member.hospital_address3
+			FROM        
+				reserve
+			LEFT JOIN  
+				normal_member
+			ON           
+				reserve.normal_email = normal_member.normal_email
+			JOIN
+				hospital_member
+			ON
+				reserve.hospital_id = hospital_member.hospital_id
+			where
+				normal_member.normal_email = #{normalEmail}
+			order by
+				reserve.reserve_date desc
+			limit
+				#{paginationInfo.firstRecordIndex}, #{recordsPerPage}
+				
+		]]>
+		</select>
+		<select id="selectReserveTotalCount" parameterType="HosportalReserveDto" resultType="int">
+		 	SELECT       
+				count(*)
+			FROM        
+				reserve
+			LEFT JOIN  
+				normal_member
+			ON           
+				reserve.normal_email = normal_member.normal_email
+			where
+				normal_member.normal_email = #{normalEmail}
+		</select>
+	
+	<!-- 병원 문의하기 -->
+	<insert id="hospitalQuestion" parameterType="hosportal.dto.HosportalQuestionDto">
+		<![CDATA[
+			INSERT INTO question
+				( 
+                question_contents, 
+                question_created_date, 
+                question_title, 
+                normal_email, 
+                hospital_id)
+			VALUES
+				(#{questionContents}, NOW(), #{questionTitle}, #{normalEmail}, #{hospitalId});
+		]]>
+	</insert>
+	
+	<!-- 병원 리뷰 작성하기 -->
+	<insert id="hospitalReview" parameterType="hosportal.dto.HosportalReviewDto">
+		<![CDATA[
+			INSERT INTO review
+				( 
+                review_comment, 
+                review_created_date, 
+                normal_email,
+                hospital_id
+                )
+			VALUES
+				(#{reviewComment}, NOW(), #{normalEmail}, #{hospitalId});
+		]]>
+	</insert>
+	
+	<!-- 개인회원 마이메이지 - 문의 목록 불러오기 -->
+	<select id="normalMypageQuestion" parameterType="map"  resultType="hosportal.dto.HosportalQuestionDto">
+		<![CDATA[
+			 SELECT       
+				question.question_no,
+                question.question_title,
+			    question.question_contents, 
+			    question.question_created_date, 
+			    question.question_finished,
+                normal_member.normal_email,
+                hospital_member.hospital_id,
+                hospital_member.hospital_name
+			FROM        
+				question
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = question.normal_email
+			JOIN
+				hospital_member
+			ON
+				hospital_member.hospital_id = question.hospital_id
+			WHERE
+				normal_member.normal_email = #{normalEmail}
+			ORDER BY
+				question.question_created_date desc
+			LIMIT
+				#{paginationInfo.firstRecordIndex}, #{recordsPerPage}
+		]]>
+	</select>
+	
+	<!-- 개인회원 문의 상세보기 -->
+	<select id="mypageQuestionDetail" parameterType="int"  resultType="hosportal.dto.HosportalQuestionDto">
+		<![CDATA[
+			 SELECT       
+				question.question_no as question_no,
+                question.question_title as question_title,
+			    question.question_contents as question_contents, 
+			    question.question_created_date as question_created_date, 
+			    question.question_finished as question_finished,
+                normal_member.normal_email as normal_email,
+                hospital_member.hospital_id as hospital_id,
+                hospital_member.hospital_name as hospital_name
+			FROM        
+				question
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = question.normal_email
+			JOIN
+				hospital_member
+			ON
+				hospital_member.hospital_id = question.hospital_id
+			WHERE
+				question.question_no = #{questionNo}
+			ORDER BY
+				question.question_created_date desc
+		]]>
+	</select>
+	
+	<!-- 개인회원 문의 수정하기 -->
+	<update id="updateMyQuestion" parameterType="hosportal.dto.HosportalQuestionDto">
+		<![CDATA[
+			UPDATE 
+				question 
+			SET 
+				question_title = #{questionTitle}, question_contents= #{questionContents}
+			WHERE 
+				question_no= #{questionNo}
+		]]>
+	</update>
+	
+	
+	<!-- 개인회원 문의 삭제하기 -->
+	<delete id="deleteMyQuestion" parameterType="int">
+		<![CDATA[
+			DELETE FROM 
+				question 
+			WHERE 
+				question_no = #{questionNo}
+		]]>
+	</delete>	
+	
+	<select id="selectQuestionTotalCount" parameterType="HosportalQuestionDto" resultType="int">
+		 	SELECT       
+				COUNT(*)
+			FROM        
+				question
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = question.normal_email
+			JOIN
+				hospital_member
+			ON
+				hospital_member.hospital_id = question.hospital_id
+			WHERE
+				normal_member.normal_email = #{normalEmail}
+	</select>
+	
+	<!-- 병원 상세페이지 리뷰 불러오기 -->
+	<select id="oneHospitalReview" parameterType="String"  resultType="hosportal.dto.HosportalReviewDto">
+		<![CDATA[
+			SELECT       
+				review.review_no,
+                review.review_comment,
+			    review.review_created_date,
+                normal_member.normal_email,
+                file.file_name
+			FROM        
+				review
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = review.normal_email
+			LEFT JOIN
+				file
+			ON
+				normal_member.normal_email = file.normal_email
+			WHERE 
+				review.hospital_id = #{hospitalId}
+			ORDER BY 
+                review.review_created_date desc
+			 
+		]]>
+	</select>
+	
+	<!-- 개인회원 마이메이지 - 내 리뷰 목록 불러오기 -->
+	<select id="normalMypageReview" parameterType="map"  resultType="hosportal.dto.HosportalReviewDto">
+		<![CDATA[
+			SELECT       
+				review.review_no,
+                review.review_comment,
+			    review.review_created_date,
+                normal_member.normal_email,
+                hospital_member.hospital_id,
+                hospital_member.hospital_name
+			FROM        
+				review
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = review.normal_email
+			LEFT JOIN
+				hospital_member
+			ON
+              review.hospital_id = hospital_member.hospital_id
+			WHERE
+				normal_member.normal_email = #{normalEmail}
+			ORDER BY
+				review.review_created_date DESC
+			LIMIT
+				#{paginationInfo.firstRecordIndex}, #{recordsPerPage}	
+			
+		]]>
+	</select>
+	<select id="selectReviewTotalCount" parameterType="HosportalReviewDto" resultType="int">
+		 	SELECT       
+				COUNT(*)
+			FROM        
+				review
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = review.normal_email
+			LEFT JOIN
+				hospital_member
+			ON
+              review.hospital_id = hospital_member.hospital_id
+			WHERE
+				normal_member.normal_email = #{normalEmail}
+		</select>
+	
+	<!-- 병원회원 마이메이지 - 병원 정보 상세 페이지 -->
+	<select id="hospitalMemberDetail" parameterType="String"  resultType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			 SELECT
+				hospital_member.hospital_id,
+				hospital_member.hospital_password,
+			    hospital_member.hospital_name, 
+			    hospital_member.hospital_tel,  
+			    hospital_member.hospital_address1, 
+			    hospital_member.hospital_address2,
+                hospital_member.hospital_address3,
+                hospital_member.hospital_open_time,
+                hospital_member.hospital_close_time,
+                hospital_member.hospital_skill,
+                hospital_member.hospital_Introduce,
+                hospital_member.hospital_category1,
+                hospital_member.hospital_category2,
+                hospital_member.hospital_category3,
+                hospital_member.hospital_closed,
+			    file.file_name
+			FROM        
+				hospital_member
+			LEFT JOIN  
+				file
+			ON           
+				hospital_member.hospital_id = file.hospital_id 
+			WHERE 
+				hospital_member.hospital_id = #{hospitalID}
+		]]>
+	</select>
+	
+	<!-- 병원회원 마이메이지 - 병원 정보 수정하기 -->
+	<update id="hospitalMemberUpdate" parameterType="hosportal.dto.HosportalHospitalMemberDto">
+		<![CDATA[
+			update 
+				hospital_member
+			set
+				hospital_password = #{hospitalPassword},
+			    hospital_tel = #{hospitalTel},
+			    hospital_address1 = #{hospitalAddress1},
+			    hospital_address2 = #{hospitalAddress2},
+			    hospital_address3 = #{hospitalAddress3},
+			    hospital_open_time = #{hospitalOpenTime},
+			    hospital_name = #{hospitalName},
+			    hospital_close_time = #{hospitalCloseTime},
+			    hospital_skill = #{hospitalSkill},
+			    hospital_Introduce = #{hospitalIntroduce},
+			    hospital_category1 = #{hospitalCategory1},
+			    hospital_category2 = #{hospitalCategory2},
+			    hospital_category3 = #{hospitalCategory3},
+			    hospital_closed = #{hospitalClosed}
+			where
+				hospital_id = #{hospitalId}
+		]]>
+	</update>
+	
+	<!-- 병원회원 마이메이지 - 병원 정보 상세 페이지 -->
+	<select id="hospitalMypageReserve" parameterType="String"  resultType="hosportal.dto.HosportalReserveDto">
+		<![CDATA[
+			 SELECT       
+				reserve.reserve_no, 
+			    reserve.reserve_tel, 
+			    reserve.reserve_time, 
+			    reserve.reserve_explain,  
+			    reserve.reserve_date, 
+			    reserve.reserve_finished,
+                normal_member.normal_email,
+                normal_member.normal_name,
+                normal_member.normal_nickname,
+                normal_member.normal_birth,
+                hospital_member.hospital_id
+			FROM        
+				reserve
+			LEFT JOIN  
+				normal_member
+			ON           
+				normal_member.normal_email = reserve.normal_email
+			left join
+				hospital_member
+			on
+				reserve.hospital_id = hospital_member.hospital_id
+			where
+				hospital_member.hospital_id = #{hospitalId}
+		]]>
+	</select>
+	
+	<!-- 병원회원 마이메이지 - 예약 완료 처리 -->
+	<update id="mypagereserveFinished" parameterType="hosportal.dto.HosportalReserveDto">
+		<![CDATA[
+			update 
+				reserve
+			set
+				reserve_finished = 'Y'
+			where
+				reserve_no =  #{reserveNo}; 
+		]]>
+	</update>
+	
+	<update id="normalMypageReserveCancel" parameterType="hosportal.dto.HosportalReserveDto">
+		<![CDATA[
+			update 
+				reserve
+			set
+				reserve_finished = 'C'
+			where
+				reserve_no =  #{reserveNo}; 
+		]]>
+	</update>
+	
+	<!-- 병원회원 마이메이지 - 내 리뷰 목록 불러오기 -->
+	<select id="hospitalMypageReview" parameterType="String"  resultType="hosportal.dto.HosportalReviewDto">
+		<![CDATA[
+			SELECT       
+				review.review_no,
+                review.review_comment,
+			    review.review_created_date,
+                normal_member.normal_email,
+                hospital_member.hospital_id
+			FROM        
+				review
+			LEFT JOIN  
+				hospital_member
+			ON           
+				hospital_member.hospital_id = review.hospital_id
+			LEFT JOIN
+				normal_member
+			ON
+				normal_member.normal_email = review.normal_email
+			WHERE
+				hospital_member.hospital_id = #{hospitalId}
+			ORDER BY
+				review.review_created_date DESC
+			
+		]]>
+	</select>
+	
+	<!-- 병원회원 마이메이지 - 문의 목록 불러오기 -->
+	<select id="hospitalMypageQuestion" parameterType="String"  resultType="hosportal.dto.HosportalQuestionDto">
+		<![CDATA[
+			SELECT       
+				question.question_no,
+                question.question_title,
+			    question.question_contents, 
+			    question.question_created_date, 
+			    question.question_finished,
+                normal_member.normal_email,
+                hospital_member.hospital_id,
+                hospital_member.hospital_name
+			FROM        
+				question
+			LEFT JOIN  
+				hospital_member
+			ON           
+				hospital_member.hospital_id = question.hospital_id
+			JOIN
+				normal_member
+			ON
+				normal_member.normal_email = question.normal_email
+			WHERE
+				hospital_member.hospital_id = #{hospitalId}
+			ORDER BY
+				question.question_created_date desc;
+		]]>
+	</select>
+	
+	<!-- 병원 문의 상세보기 -->
+		<select resultType="hosportal.dto.HosportalQuestionDto" id="questionHospitalDetail" parameterType="int">
+			<![CDATA[
+				 SELECT       
+					question.question_no,
+		               question.question_title,
+				    question.question_contents, 
+				    question.question_created_date, 
+				    question.question_finished,
+		               normal_member.normal_email,
+		               hospital_member.hospital_id,
+		               hospital_member.hospital_name
+				FROM        
+					question
+				LEFT JOIN  
+					hospital_member
+				ON           
+					hospital_member.hospital_id = question.hospital_id
+				JOIN
+					normal_member
+				ON
+					normal_member.normal_email = question.normal_email
+				WHERE
+					question.question_no = #{questionNo}
+				ORDER BY
+					question.question_created_date desc
+			]]>
+		</select>
+		
+		<!-- 문의 댓글 -->
+		<select resultType="hosportal.dto.ReQuestionDto" id="selectReQuestionList" parameterType="int">
+			<![CDATA[	
+					SELECT
+						r.re_question_no, 
+						r.writer,
+					    r.re_question_content,
+					    r.re_question_created_date,
+					    q.question_no
+					FROM
+						re_question as r
+					JOIN 
+						question as q
+					ON
+						q.question_no = r.question_no 
+					WHERE 
+						q.question_no = #{questionNo}
+					ORDER BY r.re_question_created_date desc 
+			]]>
+		</select>
+		
+		<!-- 문의 댓글 입력 -->
+		<insert id="insertReQuestion" parameterType="hosportal.dto.ReQuestionDto">
+			<![CDATA[
+				INSERT INTO re_question
+					(re_question_content, re_question_created_date, question_no, writer)
+				VALUES
+					(#{reQuestionContent}, NOW(), #{questionNo},  #{writer});
+			]]>
+		</insert>
+		
+		<!-- 문의 댓글 수정 -->
+		<update id="updateReQuestion" parameterType="hosportal.dto.ReQuestionDto">
+			<![CDATA[
+				UPDATE 
+					re_question 
+				SET 
+					re_question_content = #{reQuestionContent} 
+				WHERE 
+					re_question_no = #{reQuestionNo}
+			]]>
+		</update>
+		
+		<!-- 문의 댓글 삭제 -->
+		<delete id="deleteReQuestion" parameterType="int">
+			<![CDATA[
+				DELETE FROM 
+					re_question
+				WHERE  
+					re_question_no = ${reQuestionNo}
+			]]>
+		</delete>
+</mapper>
