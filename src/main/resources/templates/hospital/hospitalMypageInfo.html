@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/css/bootstrap.css" th:href="@{/css/bootstrap.css}">
+<link rel="stylesheet" th:href="@{/css/maincss.css}"></link>
+<script src="/js/jquery-3.5.1.js" th:src="@{/js/jquery-3.5.1.js}"></script>
+<script src="/js/popper.min.js" th:src="@{/js/popper.min.js}"></script>
+<script src="/js/bootstrap.js" th:src="@{/js/bootstrap.js}"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" >
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+<script type="text/javascript">
+$(document).ready(function () {
+	
+		
+	//top버튼 컨트롤
+    $('#top').click(function(){
+       $('html, body').animate({
+           scrollTop:0
+       },500); 
+    }).hide();
+    $(window).scroll(function(){
+        if($(this).scrollTop()>200){
+            $('#top').show();
+        }else{
+            $('#top').hide();
+        }
+    });
+		
+	var cate1 = $("#cate1").val();
+	var cate2 = $("#cate2").val();
+	var cate3 = $("#cate3").val();
+	var skill = $("#skill").val();
+	var tel1 = $("#tel1").val();
+	$("#hospitalTel1").val(tel1).prop("selected", true);
+	$("#hospitalSkill").val(skill).prop("selected", true);
+	$("#hospitalCategory1").val(cate1).prop("selected", true);
+	$("#hospitalCategory2").val(cate2).prop("selected", true);
+	$("#hospitalCategory3").val(cate3).prop("selected", true);
+	var result = true;
+	var hospitalPassword = $('#hospitalPassword').val();
+	var hospitalPassword2 = $('#hospitalPassword2').val(); 
+	$('#hospitalPassword2').blur(function(){
+		if (hospitalPassword == hospitalPassword2) {
+			$("#pw_check").text("비밀번호가 일치합니다.  ");
+			$('#pw_check').css('color', 'blue');
+			result = true;
+		}
+		else if(hospitalPassword != hospitalPassword2){
+			$("#pw_check").text("비밀번호가 일치하지 않습니다.  ");
+			$('#pw_check').css('color', 'red');
+			result = false;
+		}
+	});
+	var hospitalId = $("#hospitalId").val();
+	$("#reservebtn").on("click", function() {
+		var check = confirm("정말 수정하시겠습니까?");
+		$("#method").val("PUT");
+		if(result){
+			if(check){
+				var frm = $("#InfoForm")[0];
+				frm.action = "/hospital/mypageInfo/update/" + hospitalId;
+				frm.submit();
+				alert("수정되었습니다.")
+			}
+			
+		}
+		else{
+			alert("회원가입 양식을 확인해주세요");
+		}
+	});
+	
+	
+	/* 프로필파일 미리보기 */
+    $("#fileId").on("change", handleImgFileSelect);
+    
+    function handleImgFileSelect(e) {
+       var files = e.target.files;
+       var filesArr = Array.prototype.slice.call(files);
+       
+       filesArr.forEach(function(f) {
+          if(!f.type.match("image.*")) {
+             return;
+          }
+          
+          sel_file = f;
+          
+          var reader = new FileReader();
+          reader.onload = function (e) {
+             $("#img").attr("src", e.target.result);
+          }
+            reader.readAsDataURL(f);           
+       })
+    }
+	
+});
+
+
+
+
+
+function execPostCode() {
+         new daum.Postcode({
+             oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+ 
+                // 도로명 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var fullRoadAddr = data.roadAddress; // 도로명 주소 변수
+                var extraRoadAddr = ''; // 도로명 조합형 주소 변수
+ 
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                   extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 도로명, 지번 조합형 주소가 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if(extraRoadAddr !== ''){
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+                // 도로명, 지번 주소의 유무에 따라 해당 조합형 주소를 추가한다.
+                if(fullRoadAddr !== ''){
+                    fullRoadAddr += extraRoadAddr;
+                }
+ 
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                console.log(data.zonecode);
+                console.log(fullRoadAddr);
+                
+                
+                $("[name=hospitalAddress1]").val(data.zonecode);
+                $("[name=hospitalAddress2]").val(fullRoadAddr);
+                
+                /* document.getElementById('signUpUserPostNo').value = data.zonecode; //5자리 새우편번호 사용
+                document.getElementById('signUpUserCompanyAddress').value = fullRoadAddr;
+                document.getElementById('signUpUserCompanyAddressDetail').value = data.jibunAddress; */
+            }
+         }).open();
+     }
+     
+
+
+
+    </script>
+</head>
+<body>
+<header class=" text-center">
+	<div id="mainHeader">
+		<div id="mainNav">
+			<div class="d-flex justify-content-between">
+				<div class="pt-2">
+					<nav class="navbar navbar-expand-sm justify-center-center">
+						<a class="mr-5 ml-2" href="/hospital/index">
+							<img class="" src="../../img/logo.png" width="150px;">
+						</a>
+						<ul class="navbar-nav">
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/hospital1">진료과목별</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/hospital2">지역별</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/event">이벤트</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/community">커뮤니티</a>
+						    </li>
+						</ul>
+					</nav>
+				</div>
+				<div class="p-2">
+				    <nav class="navbar navbar-expand-sm justify-center-center">
+				        <ul class="navbar-nav">
+				            <li class="nav-item mr-2">
+				            	<a class="nav-link text-dark small" th:if="${session.hospitalId} != null">
+				                    <span th:text="${session.hospitalId} + ' 님 '" ></span>
+				                </a>
+				            </li>
+				            <li class="nav-item">
+				                <a class="nav-link text-dark small" href="/login/normal/logout" th:if="${session.hospitalId} != null">
+				                    <span>로그아웃</span>
+				                </a>
+				                <a class="nav-link text-dark" href="/login" th:unless="${session.hospitalId} != null">
+				                    <i class="fa fa-user-circle-o" aria-hidden="true" style=" font-size:26px; color: #0E2D53;"></i>
+				                </a>
+				            </li>
+				            <li class="nav-item">
+                                <a class="nav-link text-dark mx-2 small" th:if="${session.hospitalId} != null" href="/hospital/mypageInfo/" th:attrappend="href=${session.hospitalId}">
+                                    My
+                                </a>
+                                <a class="nav-link text-dark mx-2 small" th:unless="${session.hospitalId} != null" href="/login">
+                                    My
+                                </a>
+	                        </li>
+				        </ul>
+				    </nav>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>
+<main class="container">
+	<div class="mypageWrap text-center">
+		<h3>My Page</h3>
+		<ul class="nav justify-content-center">
+			<li class="nav-item">
+				<a class="nav-link small text-primary" href="/hospital/mypageInfo/" th:attrappend="href=${session.hospitalId}">병원 정보</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link small" href="/hospital/mypageReserveInfo/" th:attrappend="href=${session.hospitalId}">예약 현황</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link small" href="/hospital/mypageReviewInfo/" th:attrappend="href=${session.hospitalId}">병원 리뷰</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link small" href="/hospital/mypageQuestionInfo/" th:attrappend="href=${session.hospitalId}">병원 문의</a>
+			</li>
+		</ul>
+		<div class="mypageInfo mt-5">
+			<div class="registerWrap text-center" style="margin-top: 10px;">
+				<form action="" method="POST" id="InfoForm" class="" enctype="multipart/form-data">
+					<div class="d-flex">
+						<div class="registerFormWrap" style="width: 800px;">
+							<div class="row pb-3">
+								<div class="col-sm-2 text-left">
+								<p>아이디<span class="font-weight-bold text-info"> *</span></p>
+								</div>
+								<div class="col-sm-10 text-left">
+									<input class="registerForm" placeholder="" name="hospitalId" id="hospitalId" type="text" th:value="${data.hospitalId}" readonly="readonly">
+									<span class=" comment check_font" id="id_check"></span>
+									<span class="comment text-muted"></span>
+								</div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							       <p>패스워드 <span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm" placeholder="" name="hospitalPassword" id="hospitalPassword" type="password" th:value="${data.hospitalPassword}">
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2 text-left">
+							        <p>패스워드 확인 <span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm" placeholder="" name="hospitalPassword2" id="hospitalPassword2" type="password" th:value="${data.hospitalPassword}">
+							    	<span class=" comment check_font " id="pw_check"></span>
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2 text-left">
+							        <p>전화번호 <span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <input type="hidden" th:value="${data.hospitalTel1}" id="tel1">
+							    <div class="col-sm-10 text-left">
+							        <select class="registerForm" style="width: 60px;" id="hospitalTel1" name="hospitalTel1">
+							        	<option>선택</option> 
+										<option value="02" selected>서울 (02)</option> 
+										<option value="031">경기 (031)</option> 
+										<option value="032"> 인천 (032) </option> 
+										<option value="033"> 강원 (033) </option> 
+										<option value="041"> 충남 (041) </option> 
+										<option value="042"> 대전 (042) </option> 
+										<option value="043"> 충북 (043) </option> 
+										<option value="051"> 부산 (051) </option> 
+										<option value="052"> 울산 (052) </option> 
+										<option value="053"> 대구 (053) </option> 
+										<option value="054"> 경북 (054) </option> 
+										<option value="055"> 경남 (055) </option> 
+										<option value="061"> 전남 (061) </option> 
+										<option value="062"> 광주 (062) </option> 
+										<option value="063"> 전북 (063) </option> 
+										<option value="064"> 제주 (064) </option> 
+										<option value="070"> 인터넷전화 (070) </option> 
+										<option value="050"> 평생전화 (050) </option> 
+										<option value="010"> 010 </option> 
+										<option value="011"> 011 </option> 
+										<option value="016"> 016 </option> 
+										<option value="017"> 017 </option> 
+										<option value="018"> 018 </option> 
+										<option value="019"> 019 </option>
+									</select> -
+									<input class="registerForm" style="width: 100px;" placeholder="" name="hospitalTel2" id="hospitalTel2" type="text" th:value="${data.hospitalTel2}"> -
+									<input class="registerForm" style="width: 100px;" placeholder="" name="hospitalTel3" id="hospitalTel3" type="text" th:value="${data.hospitalTel3}">
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2 text-left">
+							        <p>주소 <span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <div class="col-sm-10 text-left">  
+					                <input class="registerForm" placeholder=" 우편번호" name="hospitalAddress1" id="hospitalAddress1" type="text" readonly="readonly" th:value="${data.hospitalAddress1}" >
+					                <button type="button" class="addressBtn" onclick="execPostCode();"><span class="small"><i class="fa fa-search"></i> 우편번호</span></button>         
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2 text-left"></div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm" style="width: 500px;" placeholder=" 도로명 주소" name="hospitalAddress2" id="hospitalAddress2" type="text" readonly="readonly" th:value="${data.hospitalAddress2}">
+							    </div>
+							</div>
+							<div class="row pb-4">
+							    <div class="col-sm-2 text-left">
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm" style="width: 500px;" placeholder=" 상세주소" name="hospitalAddress3" id="hospitalAddress3" type="text" th:value="${data.hospitalAddress3}" />
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							        <p>진료시간 <span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm" style="width: 100px;"  placeholder=" 시작시간" name="hospitalOpenTime" id="hospitalOpenTime" type="text" th:value="${data.hospitalOpenTime}" />
+							       ~ <input class="registerForm" style="width: 100px;" placeholder=" 종료시간" name="hospitalCloseTime" id="hospitalCloseTime" type="text" th:value="${data.hospitalCloseTime}"  />
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							        <p>병원이름<span class="font-weight-bold text-info"> *</span></p>
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <input class="registerForm"  placeholder="" name="hospitalName" id="hospitalName" type="text" th:value="${data.hospitalName}">
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							        <p>진료과목</p>
+							    </div>
+							    <input type="hidden" id="skill" th:value="${data.hospitalSkill}">
+							    <div class="col-sm-10 text-left">
+							        <select class="registerForm" style="width: 100px;" id="hospitalSkill" name="hospitalSkill">
+							        	<option>선택</option> 
+										<option value="피부과" selected>피부과</option> 
+										<option value="치과">치과</option> 
+										<option value="안과">안과</option> 
+										<option value="내과">내과</option> 
+										<option value="한의원">한의원</option> 
+										<option value="산부인과">산부인과</option> 
+										<option value="성형외과">성형외과</option> 
+										<option value="소아청소년과">소아청소년과</option> 
+										<option value="이비인후과">이비인후과</option> 
+										<option value="가정의학과">가정의학과</option> 
+										<option value="정신건강의학과">정신건강의학과</option> 
+										<option value="재확의학과">재확의학과</option> 
+										<option value="외과">외과</option> 
+										<option value="정형외과">정형외과</option> 
+										<option value="신경과">신경과</option> 
+										<option value="비뇨기과">비뇨기과</option> 
+									</select>
+								</div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							        <p>병원 설명</p>
+							    </div>
+							    <div class="col-sm-10 text-left">
+							        <textarea rows="" cols="" class="registerForm" style="width: 500px; height: 300px" name="hospitalIntroduce" th:text="${data.hospitalIntroduce}"></textarea>
+							    </div>
+							</div>
+							<div class="row pb-3">
+							    <div class="col-sm-2  text-left">
+							        <p>카테고리
+							    </div>
+							    <input type="hidden" th:value="${data.hospitalCategory1}" id="cate1">
+							    <input type="hidden" th:value="${data.hospitalCategory2}" id="cate2">
+							    <input type="hidden" th:value="${data.hospitalCategory3}" id="cate3">
+							    <div class="col-sm-10 text-left">
+							        <select class="registerForm" style="width: 120px;" id="hospitalCategory1" name="hospitalCategory1">
+								        <option value="">선택1</option> 
+										<option value="탈모">탈모</option> 
+										<option value="치과">치과</option> 
+										<option value="척추">척추</option> 
+										<option value="화상">화상</option> 
+										<option value="두통">두통</option> 
+										<option value="만성피로">만성피로</option> 
+										<option value="심장질환">심장질환</option> 
+										<option value="비만">비만</option> 
+										<option value="대상포진">대상포진</option> 
+										<option value="턱관절질한">턱관절질한</option> 
+										<option value="중이염">중이염</option> 
+										<option value="어지럼증">어지럼증</option> 
+										<option value="체형">체형</option> 
+										<option value="류마티스">류마티스</option> 
+										<option value="내시경">내시경</option> 
+										<option value="치매">치매</option>
+										<option value="건강검진">건강검진</option>
+										<option value="응급진료">응급진료</option>
+										<option value="알레르기">알레르기</option>  
+							        </select>
+							       <select class="registerForm" style="width: 120px;" id="hospitalCategory2" name="hospitalCategory2">
+								       	<option value="">선택2</option> 
+										<option value="탈모">탈모</option> 
+										<option value="치과">치과</option> 
+										<option value="척추">척추</option> 
+										<option value="화상">화상</option> 
+										<option value="두통">두통</option> 
+										<option value="만성피로">만성피로</option> 
+										<option value="심장질환">심장질환</option> 
+										<option value="비만">비만</option> 
+										<option value="대상포진">대상포진</option> 
+										<option value="턱관절질한">턱관절질한</option> 
+										<option value="중이염">중이염</option> 
+										<option value="어지럼증">어지럼증</option> 
+										<option value="체형">체형</option> 
+										<option value="류마티스">류마티스</option> 
+										<option value="내시경">내시경</option> 
+										<option value="치매">치매</option>
+										<option value="건강검진">건강검진</option>
+										<option value="응급진료">응급진료</option>
+										<option value="알레르기">알레르기</option>  
+					                </select>
+					                <select class="registerForm" style="width: 120px;" id="hospitalCategory3" name="hospitalCategory3">
+						                <option value="">선택3</option> 
+										<option value="탈모">탈모</option> 
+										<option value="치과">치과</option> 
+										<option value="척추">척추</option> 
+										<option value="화상">화상</option> 
+										<option value="두통">두통</option> 
+										<option value="만성피로">만성피로</option> 
+										<option value="심장질환">심장질환</option> 
+										<option value="비만">비만</option> 
+										<option value="대상포진">대상포진</option> 
+										<option value="턱관절질한">턱관절질한</option> 
+										<option value="중이염">중이염</option> 
+										<option value="어지럼증">어지럼증</option> 
+										<option value="체형">체형</option> 
+										<option value="류마티스">류마티스</option> 
+										<option value="내시경">내시경</option> 
+										<option value="치매">치매</option>
+										<option value="건강검진">건강검진</option>
+										<option value="응급진료">응급진료</option>
+										<option value="알레르기">알레르기</option>  
+							        </select>
+								</div>
+							</div>
+					        <div class="row pb-3">
+					            <div class="col-sm-2  text-left">
+					                <p>휴일</p>
+					            </div>
+					            <div class="col-sm-10 text-left">
+					                <input class="registerForm"  placeholder="" name="hospitalClosed" id="hospitalClosed" type="text" th:value="${data.hospitalClosed}">
+					            </div>
+					     	</div>
+						</div>
+    					<div class="imgWrap row mb-5" style="width: 240px; height:200px; border: 1px solid lightgray; margin-top: 30px" >
+							<img th:src="@{${data.fileName}}" width="100%" height="100%" th:if="${data.fileName} != null" id="img">
+							<img src="../../../img/img1.png" width="100%" height="100%" th:unless="${data.fileName} != null" id="img">
+							<input type="file" id="fileId" name="fileId" class="form-control-file small text-muted" style="position: relative; top: 5px;" >
+						</div>
+					</div>
+					<div>
+						<input type="hidden" id="method" name="_method">
+					    <button type="button" id="reservebtn" class="registerBtn mb-5"> 수정하기 </button>
+					</div>
+  				</form>
+			</div>
+		</div>
+	</div>
+</main>
+</body>
+</html>
