@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/css/bootstrap.css" th:href="@{/css/bootstrap.css}">
+<link rel="stylesheet" th:href="@{/css/maincss.css}"></link>
+<script src="/js/jquery-3.5.1.js" th:src="@{/js/jquery-3.5.1.js}"></script>
+<script src="/js/popper.min.js" th:src="@{/js/popper.min.js}"></script>
+<script src="/js/bootstrap.js" th:src="@{/js/bootstrap.js}"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" >
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<style type="text/css">
+	#eventb{
+		background-image: url( "../../../img/mainbanner11.jpg" );
+		opacity: 0.8;
+	}
+</style>
+<script>
+	$(document).ready(function(){	
+		var communityNo = $("#communityNo").val();
+		
+		$("#btnList").on("click", function(){
+			location.href="/hospital/community";
+		});
+		
+		$("#btnDel").on("click", function(){
+			$("#method").val("DELETE");
+			var frm = $("#frm")[0];
+			frm.action = "/normal/deleteCommunity/" + communityNo;
+			frm.submit();
+			alert("삭제가 완료되었습니다.");
+		});
+	});
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+	
+	//top버튼 컨트롤
+    $('#top').click(function(){
+       $('html, body').animate({
+           scrollTop:0
+       },500); 
+    }).hide();
+    $(window).scroll(function(){
+        if($(this).scrollTop()>200){
+            $('#top').show();
+        }else{
+            $('#top').hide();
+        }
+    });
+	
+});
+</script>
+<script type="text/javascript" th:inline="javascript">
+$(document).ready(function(){	
+	showReplyList();
+	function showReplyList(){
+		var url = "/hos/selectReCommunityList";
+		var commuNo = Number($("#communityNo").val());
+		
+		var data = {commuNo : commuNo};
+			
+		$.ajax({
+            url: url,
+            type: 'post',
+            data: data,
+            success: function(result) {
+               	var htmls = "";
+ 				if(result.length < 1){
+ 					htmls.push("등록된 댓글이 없습니다.");
+ 				}
+ 				else {
+ 					$(result).each(function(){
+ 						htmls += "<li data-re_community_no='" + this.reCommunityNo + "' class='replyLi'>"
+ 						htmls += "<div class='d-flex w-100'><div class='n_member_id mr-auto'>작성자/" + this.nmemberId + "</div>" 
+ 								+ "<div class='re_created_date text-muted'>" + this.reCreatedDate + "</div></div><hr>"
+ 						htmls += "<p class='re_contents'>" + this.reContents + "</p>"
+ 						htmls += "<button type='button' class='btn btn-xs btn-info' data-toggle='modal' style='font-size:12px;' data-target='#modifyModal'>댓글 수정</button>"
+ 						htmls += "</li>"
+ 						htmls +=  "<hr/>"; 
+ 											
+ 	                });	//each end 
+ 				}
+				
+ 				$("#replies").html(htmls);
+            },	   // Ajax success end
+            error: function() {
+            	alert("aaaa");
+            }
+		});	// Ajax end	
+	}
+	
+	/* 댓글 입력 */
+	$("#replyAddBtn").on("click",function(){
+		var reContents = $("#reContentsNew").val();
+		var nMemberId = $("#nMemberIdNew").val();
+		var commuNo = Number($("#communityNo").val());
+		
+		var paramData = {reContents : reContents, nMemberId : nMemberId, commuNo : commuNo };
+			
+		$.ajax({
+			url : "/hosportal/insertReCommunity",
+			type : 'post',
+			data : paramData,
+			dataType : 'json',
+			success : function(result){
+				if( result.status == "ok"){
+					alert("댓글 등록 완료");
+					showReplyList();
+					
+					$("#reContents").val("");
+					$("#nMemberId").val("");				
+				}else{
+					alert("error");
+				}
+			},error:function(error){
+				console.log("에러: error");
+			}
+		});
+	});
+	
+	/* 댓글 수정 모달창 */
+	$("#replies").on("click", ".replyLi button", function () { 
+		var reply = $(this).parent(); 
+		var re_community_no = reply.attr("data-re_community_no"); 
+		var re_contents = reply.find(".re_contents").text(); 
+		var n_member_id = reply.find(".n_member_id").text(); 
+		
+		$("#reCommunityNo").val(re_community_no); 
+		$("#reContents").val(re_contents); 
+		$("#nMemberId").val(n_member_id); 
+	});
+	
+	
+	/* 댓글 수정처리 */
+	$("#modalModBtn").on("click",function(){
+		var reply = $(this).parent().parent();
+		var reCommunityNo = reply.find("#reCommunityNo").val();
+		var reContents = reply.find("#reContents").val();
+		
+		$.ajax({
+			type : "put",
+			url : "/hosportal/updateReCommunity/" + reCommunityNo ,
+			data : {reContents : reContents},
+			dataType : "json",
+			success : function(result){
+				if (result.status == "ok"){
+					alert("댓글 수정 완료");
+					showReplyList();
+				}else {
+					alert("error");	
+				}
+			},
+			error: function() {
+				alert("ajax 통신 오류");
+			}
+		});
+		
+	});
+	
+	/* 댓글 삭제 */
+	$("#modalDelBtn").on("click", function () { 
+		var reCommunityNo = $(this).parent().parent().find("#reCommunityNo").val();
+		
+		$.ajax({ 
+			type : "delete", 
+			url : "/hosportal/deleteReCommunity/" + reCommunityNo, 
+			dataType : "json", 
+			success : function (result) {  
+				if (result.status == "ok") { 
+					alert("댓글 삭제 완료"); 
+					showReplyList();
+				$("#modifyModal").modal("hide"); 
+				} else{
+					alert("error");
+				}
+			} 
+		}); 
+	});
+	
+
+});
+
+</script>
+
+</head>
+<body>
+<header class=" text-center">
+	<div id="mainHeader">
+		<div id="mainNav">
+			<div class="d-flex justify-content-between">
+				<div class="pt-2">
+					<nav class="navbar navbar-expand-sm justify-center-center">
+						<a class="mr-5 ml-2" href="/hospital/index">
+							<img class="" src="../../../img/logo.png" width="150px;">
+						</a>
+						<ul class="navbar-nav">
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/hospital1">진료과목별</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/hospital2">지역별</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/event">이벤트</a>
+						    </li>
+						    <li class="nav-item mr-2">
+						        <a class="nav-link text-dark small" href="/hospital/community">커뮤니티</a>
+						    </li>
+						</ul>
+					</nav>
+				</div>
+				<div class="p-2">
+				    <nav class="navbar navbar-expand-sm justify-center-center">
+				        <ul class="navbar-nav">
+				            <li class="nav-item mr-2">
+				            	<a class="nav-link text-dark small" th:if="${session.hospitalId} != null">
+				                    <span th:text="${session.hospitalId} + ' 님 '" ></span>
+				                </a>
+				            </li>
+				            <li class="nav-item">
+				                <a class="nav-link text-dark small" href="/login/normal/logout" th:if="${session.hospitalId} != null">
+				                    <span>로그아웃</span>
+				                </a>
+				                <a class="nav-link text-dark" href="/login" th:unless="${session.hospitalId} != null">
+				                    <i class="fa fa-user-circle-o" aria-hidden="true" style=" font-size:26px; color: #0E2D53;"></i>
+				                </a>
+				            </li>
+				            <li class="nav-item">
+	                            <a class="nav-link text-dark mx-2 small" th:if="${session.hospitalId} != null" href="/hospital/mypageInfo/" th:attrappend="href=${session.hospitalId}">
+	                                My
+	                            </a>
+	                            <a class="nav-link text-dark mx-2 small" th:unless="${session.hospitalId} != null" href="/login">
+	                                My
+	                            </a>
+	                        </li>
+				        </ul>
+				    </nav>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>
+<div id="eventWrap" style="width: 100%; height: 300px; background-color: black;">
+	<div id="eventb" style="width: 100%; height: 300px;"> 
+	</div>
+	<h1 class="text-center" style="color: white; position: relative; top: -175px;">커뮤니티</h1>
+</div>
+<div class="notText text-center m-5">
+</div>
+<div class="container">
+	<form id="frm" method="POST">
+	<table class="notTable">
+		<thead>
+			<tr style="height: 50px;">
+				<th class="notNum">번호</th>
+				<th class="notTitle">제목</th>
+				<th class="notWrite">작성자</th>
+				<th class="notCount">조회수</th>
+				<th class="notDate">날짜</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="notNum" th:text="${data.communityNo}">1</td>
+				<td class="pointer text-center" th:text="${data.communityTitle}">커뮤니티 제목</td>
+				<td class="notWrite" th:text="${data.normalEmail}">집주인</td>
+				<td class="notCount" th:text="${data.communityHitCnt}">0</td>
+				<td class="notDate" th:text="${data.communityCreatedDate}">2021-03-19</td>
+			</tr>
+			<tr class="text-center">
+				<td class="notContent" colspan="4" style="padding:50px 50px" th:text="${data.communityContents}">			      
+				</td>
+			</tr>
+			<tr class="text-center">
+				<td class="notContent" colspan="4"  th:if="${data.fileName} != null">
+					<img th:src="@{${data.fileName}}" width="50%" height="auto">
+				</td>
+			</tr>
+		</tbody>
+		</table>
+		<input type="hidden" id ="communityNo" name="communityNo" th:value="${data.communityNo}">
+		<input type="hidden" id="method" name="_method">
+		<div class="d-flex justify-content-end">
+			<button type="button" id="btnList" class="notBtn" style="border: 0; color: white; background-color: #0E2D53">목록으로</button>
+		</div>
+	</form>
+		
+		<!-- 댓글입력 -->
+	<div class="card card-primary card-outline mt-5" style="border: 0">
+		<div class="card-header d-flex w-100">
+			<div class="mr-auto">
+				<div class="link-primary text-lg"><i class="fa fa-comments margin-r-5 replyCount" style="font-size:22px; color:#0E2D53;"></i></div>				
+			</div>
+			<div class="card-tools">
+				<button type="button"  style="font-size:12px; border: 0" class="" data-toggle="collapse" data-target="#collapseRe" aria-expanded="false" aria-controls="collapseRe">
+					<i class="fa fa-plus"></i>
+				</button>
+			</div>
+		</div>
+	<!-- 댓글 출력부분 -->
+		<div class="card-body collapse " id="collapseRe">
+			<ul id="replies" style="list-style: none; padding: 0;margin: 0;">
+					
+			</ul>
+			<form class="form-horizontal mt-5">
+				<div class="">
+					<div class="input-gruop"  th:if="${session.hospitalId} != null">
+						<input id="reContentsNew" type="text" placeholder="댓글입력" style="width:100%; height: 100px; border: 1px solid #999999;">
+					</div>
+					<div class="input-gruop"  th:unless="${session.hospitalId} != null">
+						<input id="reContentsNew" type="text" value="댓글을 작성하려면 로그인 해주세요" placeholder="댓글입력" style="width:100%; height: 100px; border: 1px solid #999999; "readonly="readonly">
+					</div>	
+					<div class="form-group d-flex justify-content-end mt-2">
+						<input type="hidden" id="nMemberIdNew" th:value="${session.normalEmail}"> 
+						<button type="button" class="btn btn-secondary" id="replyAddBtn" th:if="${session.hospitalId} != null">저장</button>
+						<button type="button" class="btn btn-secondary" id="replyloginBtn" th:unless="${session.hospitalId} != null">저장</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+					
+		
+		<div class="modal fade" id="modifyModal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">댓글 수정창</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+						<label for="reCommunityNo">댓글 번호</label>
+						<input class="form-control" id="reCommunityNo" name="reCommunityNo" readonly>
+					</div>
+					<div class="form-group">
+						<label for="reContents">댓글 내용</label>
+						<input class="form-control" id="reContents" name="reContents" placeholder="댓글내용">
+					</div>
+					<div class="from-group">
+						<label for="nMemberId">댓글 작성자</label>
+						<input class="form-control" id="nMemberId" name="nMemberId" readonly>
+					</div>
+					</div>
+					<div class="modal-footer">
+					<button type="button" class="btn btn-default pull-left" data-dismiss="modal">닫기</button>
+					<button type="button" class="btn btn-success" id="modalModBtn" data-dismiss="modal">수정</button>
+					<button type="button" class="btn btn-danger" id="modalDelBtn" data-dismiss="modal">삭제</button>
+				</div>
+				</div>
+				
+			</div>
+		</div>
+	
+	
+</div>
+<footer id="mainFooter">
+	<div class="container">
+		<img alt="" src="../../../img/logo.png" class="mt-3">
+		<p class="small mt-2">회원약관 | 개인정보처리방침 | 이메일무단수집거부 | 영상정보처리기기 운영 및 관리방침 | 회원안내 | 배정기준 | 채용안내 | 광고/임대문의 | 윤리경영 | 기업정보</p>
+		<p class="small pt-1" style="padding: 0; margin: 0">부산 수영구 광남로 70 6층 605호 | 고객센터 051-631-1175</p>
+		<p class="small" style="padding: 0; margin: 0">대표 호스포탈 | 사업자등록번호 123-45-6789 | 통신판매업신고번호 제2021호 | 개인정보 보호 최고 책임자 호스포탈</p>
+		<p class="small text-muted" >BUSANIT© HOSPORTAL PROJECT TEAM PORTFOLIO.</p>
+	</div>
+</footer>
+</body>
+</html>
