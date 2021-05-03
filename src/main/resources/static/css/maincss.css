@@ -1,0 +1,446 @@
+
+	a{
+		text-decoration: none;
+		color: black;
+	}
+    #mainHeader{
+        position: relative;
+        width: 100%;
+        height: 70px;
+    }
+    #mainNav{
+        background-color: rgb(247, 247, 247);
+        width: 100%;
+        height: 70px;
+        position: fixed;
+        z-index: 999;
+        display: block;
+    }
+    .newImg{
+        width: 90%;
+        height: 300px;
+        background-color: grey;
+        margin: 0 auto;
+        margin-bottom: 25px;
+        margin-top: 25px;
+    }
+    .newTitle{
+        width: 90%;
+        margin: 0 auto;
+    }
+    .newPrice{
+        width: 90%;
+        margin: 0 auto;
+    }
+    .newPrice p{
+        font-size: 22px;
+        font-weight: bold;
+    }
+    .contents{
+	    width: 100%;
+	    height: 550px;
+	    margin-top:50px;
+	    margin: 0 auto;
+    }
+    .content1{
+    	background-color:#0E2D53;
+    	width:30%;
+    	height: 70px;
+    	
+    }
+    .content1 p{
+    	font-size: 18px;
+    	font-weight: bold;
+    	line-height: 70px;
+    	color: white;
+    	margin: 0;
+    	padding: 0
+    }
+    .content1 ul{
+    	list-style: none;
+    	margin: 0;
+    	padding: 0;
+    }
+    .content1 ul li{
+    	margin-top:10px;
+    	height: 60px;
+    	border-bottom:  1px solid #dbdbdb;
+    	
+    }
+     .content1 ul li em{
+     	font-size: 20px;
+     	font-weight: bold;
+     }
+    .addr{
+    	display:block;
+    	margin-left:31px;
+    	width:90%;
+    	overflow: hidden;
+  		text-overflow: ellipsis;
+  		white-space: nowrap;
+    }
+    .content1 dl dt{
+    	width:100%;
+    	height:50px;
+    	border-bottom: 1px solid #dbdbdb;
+    	padding: 0;
+    	margin: 0;
+    	font-weight: normal;
+    }
+    .content1 dl dt span{
+    	margin-left:10px;
+    	color: #004080;
+    }
+    .content1:hover{
+    	background-color: #1e60b0;
+    }
+    #mainFooter{
+        width: 100%;
+        height: 150px;
+        background-color: rgb(247, 247, 247);
+        margin-top: 200px;
+    }
+    .loginWrap{
+        width: 400px;
+        margin: 0 auto;
+        margin-top: 100px;
+    }
+    .loginWrap h3{
+        font-size: 26px;
+    }
+    #id, #pw{
+        width: 350px;
+        border: 1px solid lightgray;
+        height: 40px;
+        margin: 10px;
+        font-size: 12px;
+    }
+    #loginBtn{
+        width: 350px;
+        height: 40px;
+        margin: 10px;
+        color: white;
+        background-color: #0E2D53;
+        border: 0;
+    }
+    #joinBtn{
+        width: 350px;
+        border: 0;
+        height: 40px;
+    }
+    .registerWrap{
+        margin-top: 100px;
+    }
+    
+    .registerWrap h3{
+        font-size: 30px;
+        font-weight: bold;
+        color: gray;
+    }
+    .normalRegister{
+    	width:90%;
+    	height:450px;
+    	margin: 0 auto;
+    	border: 4px solid #f0f0f0;
+    	
+    }
+    .normalRegister:hover{
+    	border: 4px solid #184e8f;
+    }
+    .hospitalRegister{
+   		width:90%;
+    	height:450px;
+    	margin: 0 auto;
+    	border: 4px solid #f0f0f0;
+    }
+    .hospitalRegister:hover{
+    	border: 4px solid #184e8f;
+    }
+    
+    .registerFormWrap{
+        width: 100%;
+        padding: 50px 100px;
+    }
+    .registerForm{
+        width: 300px;
+        border: 1px solid lightgray;
+        height: 25px;
+        font-size: 12px;
+        
+    }
+    .addressBtn{
+        border: 1px solid lightgray;
+        background-color: white;
+        color: black;
+        height: 30px
+    }
+    .registerFormWrap p{
+        color: #333;
+        font-size: 12px;
+    }
+    .registerBtn{
+        width: 150px;
+        height: 40px;
+        border: 1px solid black;
+        background-color: black;
+        color: white;
+		margin-top: 20px;
+    }
+    .comment{
+    	font-size: 10px;
+    }
+    .hospitalImg{
+        position: relative;
+        width: 90%;
+        height: 300px;
+        background-color: grey;
+        margin: 0 auto;
+        margin-bottom: 25px;
+        margin-top: 25px;
+    }
+    .hospitalTitle{
+        width: 90%;
+        margin: 0 auto;
+    }
+    .hospitalName{
+        width: 90%;
+        margin: 0 auto;
+    }
+    .hospitalName p{
+        font-size: 18px;
+    }
+    #mainFooter{
+        width: 100%;
+        height: 150px;
+        background-color: rgb(247, 247, 247);
+        margin-top: 200px;
+    }
+    .datailCover{
+        width: 100%;
+        height: 100%; 
+        background-color: black;
+        z-index: 99999;
+        display: inline;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    }
+    .datailCover:hover{
+        opacity: 0.5;
+    }
+    .datailCover p{
+        color: white;
+    }
+    .coverTitle{
+        padding-top: 150px;
+    }
+    .categoryMenu{
+    	width: 100%;
+    	height: 200px;
+    	border-left:1px solid rgb(233, 233, 233);
+    	border-top:1px solid rgb(233, 233, 233);
+    	
+    }
+    .categoryMenu ul{
+    	margin: 0;
+    	padding: 0; 
+    }
+    .categoryMenu ul li{
+    	float:left;
+    	width:25%;
+   		height:50px;
+   		border-bottom:1px solid rgb(233, 233, 233);
+   		border-right:1px solid rgb(233, 233, 233);
+   		background-color:rgb(250, 250, 250); 
+    	list-style: none;
+    	line-height: 50px;
+    }
+    .categoryMenu ul li:hover{
+    	text-decoration:underline;
+    	cursor: pointer;
+    	background-color: #dee0e2; 
+    }
+    
+    
+    
+    
+    .shortInfo{
+        width: 100%;
+        height: 500px;
+        margin-top: 50px;
+        
+    }
+    .titleImg{
+        width: 80%;
+        height: 80%;
+        margin: 0 auto;
+        border: 1px solid lightgrey;
+        margin-top: 50px;
+    }
+    .titleImg img{
+        width: 100%;
+        height: 100%;
+    }
+    .infoAndSeleter{
+        width: 80%;
+        padding-top: 50px;
+        margin: 0 auto;
+    }
+    .pbtn, .mbtn{
+        background-color: white;
+        border: 0px;
+    }
+    .one{
+        text-align: center; 
+        border: 1px solid lightgray;
+    }
+    .productName{
+        font-size: 22px;
+    }
+    .productPrice{
+        margin-top: 25px;
+        font-size: 20px;
+    }
+    .reservebtn{
+        margin-top: 20px;
+        width: 100%;
+        height: 40px;
+        border: 0px;
+        background-color: #0E2D53;
+        color: white;
+        cursor: pointer;
+        display: block;
+    }
+    .detailImg{
+        width: 80%;
+        margin: 0 auto;
+        padding-top: 100px;
+    }
+    .detailImg img{
+        width: 100%;
+    }
+    
+    
+    .notTable{
+        width: 100%;
+        font-size: 12px;
+    }
+    .notTable thead{
+        margin-bottom: 10px;
+    }
+    .notTable thead th{
+        height: 40px;
+        border-bottom: 1px solid lightgrey;
+        border-top: 1px solid lightgrey;        
+    }
+    .notTable thead td{
+        text-align: center;
+    }
+    .notNum{
+        text-align: center;
+    }
+    .notTitle{
+        width: 70%;
+        text-align: center;
+    }
+    .notWrite{
+        width: 10%;
+        text-align: center;
+    }
+    .notDate{
+        width: 10%;
+        text-align: center;
+    }
+    .notTable tbody tr{
+        height: 50px;
+        color: gray;
+    }
+    .pointer{
+        cursor: pointer;
+    }
+    .notBtn{
+    	text-align:center;
+    	width: 100px;
+    	background-color: black;
+    	height: 35px;
+    	margin-top: 20px;
+    }
+    .notBtn a{
+    	color: white;
+    	text-decoration: none;
+    	line-height: 35px;
+    	font-size: 14px;
+    }
+    
+    .mypageWrap{
+        width: 100%;
+        margin: 0 auto;
+        margin-top: 100px;
+    }
+    .mypageNav{
+    	margin-top:50px;
+    	border-bottom: 2px solid lightgray;
+    	border-top: 2px solid lightgray;
+    	width: 140px;
+    	height: 300px;
+    }
+    .mypageNav ul{
+    	list-style: none;
+    	text-align: center;
+    	
+    	margin: 0;
+    	margin-top: 20px;
+    }
+    .mypageNav ul li{
+    	text-align: left;
+    	margin-bottom: 20px;
+    }
+    .mypageInfo{
+    	width: 100%;
+    	height: 750px;
+    }
+    
+     	.board_con {
+         	 width: 100%;
+        }
+        
+        .board_con .boardList dl {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            padding: 30px 0;
+            border-bottom: 1px dashed #c8c8c8;
+            clear: both;
+            cursor: pointer;
+        }
+        .board_con .boardList dl dt {
+            width: 17%;
+            float: left;
+        }
+        .board_con .boardList dl dt img {
+            width: 100%;
+           	height: 100px;
+        }
+        .board_con .boardList dl dd {
+            width: 80%;
+            float: right;
+        }
+        
+        .board_con .boardList dl dd strong {
+            display: block;
+            font-weight: 400;
+            color: #000;
+            font-size: 20px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .board_con .boardList dl dd span {
+            line-height: 22px;
+            overflow: hidden;
+            text-align: left;
+        }
+    
+    
+    
